@@ -1,3 +1,4 @@
+# /data/ folder required 
 version: "3.5"
 services:
   mongo:
