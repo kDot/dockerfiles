@@ -1,0 +1,69 @@
+#
+# apps for arm based homeserver
+#
+# - /data/ folder required
+#
+version: "3.5"
+services:
+  portainer:
+    image: portainer/portainer #https://hub.docker.com/r/portainer/portainer
+    container_name: portainer 
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/portainer:/data
+    ports:
+     - "9000:9000"
+  unifi:
+    image: jacobalberty/unifi:arm32v7
+    container_name: unifi 
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    environment:
+      - RUNAS_UID0=false
+      - UNIFI_UID=1000
+      - UNIFI_GID=1000
+      - DB_URI=mongodb://unifi-db/unifi
+      - STATDB_URI=mongodb://unifi-db/unifi_stat
+      - DB_NAME=unifi
+    volumes:
+      - /data/unifi:/unifi
+    ports:
+     - "8443:8443"
+     - "3478:3478/udp"
+     - "10001:10001/udp"
+     - "8080:8080"
+  unifi-db:
+    image: webhippie/mongodb
+    container_name: mongo
+    restart: unless-stopped
+    volumes:
+      - /data/unifi-db:/data/db
+  nextcloud:
+    image: nextcloud
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - mariadb
+    volumes:
+      - /data/nextcloud:/var/www/html
+    environment:
+      - MYSQL_HOST=mariadb
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${MYSQL_USER_PW}
+      - MYSQL_DATABASE=nextcloud
+    restart: unless-stopped
+  mariadb:
+    image: mariadb
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    restart: unless-stopped
+    volumes:
+      - /data/mariadb/:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PW}
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=${MYSQL_USER_PW}
+      - MYSQL_DATABASE=nextcloud
+
