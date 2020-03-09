@@ -18,7 +18,7 @@ services:
     image: jacobalberty/unifi:arm32v7
     container_name: unifi 
     depends_on:
-      - mongo
+      - unifi-db 
     restart: unless-stopped
     environment:
       - RUNAS_UID0=false
