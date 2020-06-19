@@ -35,13 +35,14 @@ services:
      - "10001:10001/udp"
      - "8080:8080"
   unifi-db:
-    image: webhippie/mongodb
-    container_name: mongo
+    image: webhippie/mongodb:latest-arm32v7
+    container_name: unifi-db
     restart: unless-stopped
     volumes:
-      - /data/unifi-db:/data/db
+      - /data/unifi-db:/var/lib/mongodb/
   nextcloud:
     image: nextcloud
+    container_name: nextcloud
     ports:
       - 80:80
       - 443:443
@@ -56,7 +57,9 @@ services:
       - MYSQL_DATABASE=nextcloud
     restart: unless-stopped
   mariadb:
-    image: mariadb
+    # official image does not support arm32
+    image: jsurf/rpi-mariadb
+    container_name: mariadb
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     restart: unless-stopped
     volumes:
